@@ -11,5 +11,6 @@ data class Medicine(
     val type: String,
     val dosage: String,
     val time: String,
-    var isTaken: Boolean = false
+    var isTaken: Boolean = false,
+    val days: String
 )
