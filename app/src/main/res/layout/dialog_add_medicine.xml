@@ -46,20 +46,23 @@
         android:text="Усі дні"
         android:textColor="#4CAF50"/>
 
-    <LinearLayout
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Дні прийому:"
+        android:layout_marginTop="12dp"
+        android:textSize="12sp"
+        android:textStyle="bold"/>
+
+    <EditText
+        android:id="@+id/editDays"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingLeft="16dp">
-
-        <CheckBox android:id="@+id/cbMon" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Понеділок"/>
-        <CheckBox android:id="@+id/cbTue" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Вівторок"/>
-        <CheckBox android:id="@+id/cbWed" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Середа"/>
-        <CheckBox android:id="@+id/cbThu" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Четвер"/>
-        <CheckBox android:id="@+id/cbFri" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="П'ятниця"/>
-        <CheckBox android:id="@+id/cbSat" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Субота"/>
-        <CheckBox android:id="@+id/cbSun" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Неділя"/>
-    </LinearLayout>
+        android:hint="Виберіть дні"
+        android:focusable="false"
+        android:clickable="true"
+        android:layout_marginTop="4dp"
+        android:background="?android:attr/editTextBackground" />
 
     <EditText
         android:id="@+id/editDosage"
@@ -75,7 +78,19 @@
         android:hint="Час (напр. 08:00)"
         android:layout_marginTop="8dp"
         android:inputType="time"/>
+    <EditText
+        android:id="@+id/editTotalDoses"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Скільки всього прийомів (напр. 3)"
+        android:inputType="number" />
 
+    <EditText
+        android:id="@+id/editInterval"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Інтервал між ними (в годинах)"
+        android:inputType="number" />
     <Button
         android:id="@+id/btnSave"
         android:layout_width="match_parent"

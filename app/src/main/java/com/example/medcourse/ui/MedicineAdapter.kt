@@ -11,7 +11,8 @@ import com.example.medcourse.data.Medicine
 
 class MedicineAdapter(
     private var meds: List<Medicine>,
-    private val onDeleteClick: (Medicine) -> Unit
+    private val onDeleteClick: (Medicine) -> Unit,
+    private val onItemClick: (Medicine) -> Unit // Клік по всій картці для редагування
 ) : RecyclerView.Adapter<MedicineAdapter.MedViewHolder>() {
 
     class MedViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -19,6 +20,7 @@ class MedicineAdapter(
         val details: TextView = view.findViewById(R.id.txtDetails)
         val time: TextView = view.findViewById(R.id.txtTime)
         val btnDelete: ImageButton = view.findViewById(R.id.btnDelete)
+        val txtProgress: TextView = view.findViewById(R.id.txtProgress)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MedViewHolder {
@@ -32,7 +34,14 @@ class MedicineAdapter(
         holder.details.text = "${med.type} • ${med.dosage}"
         holder.time.text = med.time
 
+        // Виводимо прогрес прийому
+        holder.txtProgress.text = "Прийнято: ${med.takenDoses} з ${med.totalDoses}"
+
+        // Видалення через кошик
         holder.btnDelete.setOnClickListener { onDeleteClick(med) }
+
+        // Редагування через клік по картці
+        holder.itemView.setOnClickListener { onItemClick(med) }
     }
 
     override fun getItemCount() = meds.size

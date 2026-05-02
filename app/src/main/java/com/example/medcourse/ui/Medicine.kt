@@ -12,5 +12,8 @@ data class Medicine(
     val dosage: String,
     val time: String,
     var isTaken: Boolean = false,
-    val days: String
+    val days: String,
+    val totalDoses: Int = 1,  // скільки разів на день треба прийняти
+    val takenDoses: Int = 0,  // скільки прийнято
+    val interval: Int = 0
 )
