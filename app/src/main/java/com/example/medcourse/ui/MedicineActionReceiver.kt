@@ -16,22 +16,36 @@ class MedicineActionReceiver : BroadcastReceiver() {
         val medicineName = intent.getStringExtra("MED_NAME") ?: "ліки"
         val medId = intent.getIntExtra("MED_ID", -1)
 
-        if (action == "ACTION_TAKEN" && medId != -1) {
-            // Отримуємо доступ до бази даних
-            val db = AppDatabase.getDatabase(context)
+        if (medId == -1) return
 
-            // Запускаємо оновлення статистики в базі (фоновий потік)
-            GlobalScope.launch(Dispatchers.IO) {
-                db.medicineDao().incrementTakenDoses(medId)
+        // Отримуємо доступ до бази даних
+        val db = AppDatabase.getDatabase(context)
+
+        when (action) {
+            "ACTION_TAKEN" -> {
+                // Запускаємо оновлення статистики в базі (фоновий потік)
+                GlobalScope.launch(Dispatchers.IO) {
+                    db.medicineDao().incrementTakenDoses(medId)
+                    // Скидаємо статус пропуску, якщо ліки прийнято
+                    db.medicineDao().updateSkippedStatus(medId, false)
+                }
+                // Показуємо підтвердження користувачу
+                Toast.makeText(context, "Прийом $medicineName зафіксовано!", Toast.LENGTH_SHORT).show()
             }
 
-            // Показуємо підтвердження користувачу
-            Toast.makeText(context, "Прийом $medicineName зафіксовано!", Toast.LENGTH_SHORT).show()
+            "ACTION_SKIP" -> {
+                // Позначаємо в базі, що прийом пропущено
+                GlobalScope.launch(Dispatchers.IO) {
+                    db.medicineDao().updateSkippedStatus(medId, true)
+                }
+                // Показуємо підтвердження пропуску
+                Toast.makeText(context, "Прийом $medicineName пропущено!", Toast.LENGTH_SHORT).show()
+            }
         }
 
-        // Закриваємо сповіщення в шторці (щоб воно не висіло після натискання)
-        if (medId != -1) {
-            NotificationManagerCompat.from(context).cancel(medId)
-        }
+        // Закриваємо сповіщення в шторці
+        NotificationManagerCompat.from(context).cancel(medId)
+
+        Toast.makeText(context, "Сигнал отримано!", Toast.LENGTH_SHORT).show()
     }
 }

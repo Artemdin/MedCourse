@@ -17,8 +17,8 @@ class MedicineAdapter(
 
     class MedViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.txtName)
+        val txtTime: TextView = view.findViewById(R.id.txtTime)
         val details: TextView = view.findViewById(R.id.txtDetails)
-        val time: TextView = view.findViewById(R.id.txtTime)
         val btnDelete: ImageButton = view.findViewById(R.id.btnDelete)
         val txtProgress: TextView = view.findViewById(R.id.txtProgress)
     }
@@ -30,17 +30,35 @@ class MedicineAdapter(
 
     override fun onBindViewHolder(holder: MedViewHolder, position: Int) {
         val med = meds[position]
+
         holder.name.text = med.name
+        holder.txtTime.text = med.time // Тепер без пробілів і підключено правильно
+
+        // перевіряємо статус пропуску прямо при відмальовці списку
+        if (med.isSkipped)
+        {
+            holder.txtProgress.text = "ПРОПУЩЕНИЙ ПРИЙОМ ЛІКІВ!"
+            holder.txtProgress.setTextColor(android.graphics.Color.RED)
+            holder.name.setTextColor(android.graphics.Color.RED) // красить в червоний
+        }
+        else if (med.takenDoses >= med.totalDoses)
+        {
+            holder.txtProgress.text = "КУРС ЗАВЕРШЕНО! (${med.takenDoses}/${med.totalDoses})"
+            holder.txtProgress.setTextColor(android.graphics.Color.parseColor("#388E3C")) // Темно-зелений
+            holder.name.setTextColor(android.graphics.Color.parseColor("#388E3C"))
+        }
+        else
+        {
+            // вивід статистики
+            holder.txtProgress.text = "Прийнято: ${med.takenDoses} з ${med.totalDoses}"
+            holder.txtProgress.setTextColor(android.graphics.Color.GRAY)
+            holder.name.setTextColor(android.graphics.Color.BLACK)
+        }
+
+        // Вивід деталей / тип + доза
         holder.details.text = "${med.type} • ${med.dosage}"
-        holder.time.text = med.time
 
-        // Виводимо прогрес прийому
-        holder.txtProgress.text = "Прийнято: ${med.takenDoses} з ${med.totalDoses}"
-
-        // Видалення через кошик
         holder.btnDelete.setOnClickListener { onDeleteClick(med) }
-
-        // Редагування через клік по картці
         holder.itemView.setOnClickListener { onItemClick(med) }
     }
 

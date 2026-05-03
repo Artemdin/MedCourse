@@ -15,5 +15,6 @@ data class Medicine(
     val days: String,
     val totalDoses: Int = 1,  // скільки разів на день треба прийняти
     val takenDoses: Int = 0,  // скільки прийнято
-    val interval: Int = 0
+    val interval: Int = 0,
+    val isSkipped: Boolean = false
 )

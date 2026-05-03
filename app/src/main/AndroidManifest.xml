@@ -25,7 +25,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <receiver
+            android:name=".ui.AlarmReceiver"
+            android:enabled="true"
+            android:exported="false" />
 
+        <receiver
+            android:name=".ui.MedicineActionReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="ACTION_TAKEN" />
+            </intent-filter>
+        </receiver>
         <receiver
             android:name=".ui.AlarmReceiver"
             android:enabled="true"

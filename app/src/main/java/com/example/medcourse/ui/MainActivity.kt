@@ -87,18 +87,37 @@ class MainActivity : AppCompatActivity() {
             notificationManager.createNotificationChannel(channel)
         }
     }
-
+    override fun onResume()
+    {
+        super.onResume()
+        refreshData()
+    }
     // функція для оновлення списку ліків на екрані
     private fun refreshData() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val allMeds = database.medicineDao().getAllMedicine()
+            val allMeds = database.medicineDao().getAllMedicine() // з бази беремо ліки
+
+            val sortedMeds = allMeds.sortedBy { it.time }
+
+            //  Отримуємо поточний системний час
+            val currentTime = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()).format(java.util.Date())
 
             withContext(Dispatchers.Main) {
-                adapter.updateData(allMeds)
+                // Оновлюємо основний список
+                adapter.updateData(sortedMeds)
+
+                // Пошук лік
+                // -Ще не настав час (або зараз)
+                // -Які ще не закінчились в вживанні (taken < total)
+                val nextMed = sortedMeds.firstOrNull {
+                    it.time >= currentTime && it.takenDoses < it.totalDoses
+                } ?: sortedMeds.firstOrNull { it.takenDoses < it.totalDoses } // ящо на сьогодні нема ліків, шукаємо перші не закінчені на ближчий до нас час
 
                 val txtNext = findViewById<TextView>(R.id.txtNextMedicine)
-                if (allMeds.isNotEmpty()) {
-                    txtNext.text = "${allMeds.last().name} о ${allMeds.last().time}"
+
+                // Виводимо текст у синю картку
+                if (nextMed != null) {
+                    txtNext.text = "${nextMed.name} о ${nextMed.time}"
                 } else {
                     txtNext.text = "Немає запланованих"
                 }
@@ -119,6 +138,50 @@ class MainActivity : AppCompatActivity() {
         val editInterval = view.findViewById<EditText>(R.id.editInterval)
         val spinnerType = view.findViewById<android.widget.Spinner>(R.id.spinnerType)
         val btnSave = view.findViewById<android.widget.Button>(R.id.btnSave)
+
+        btnSave.setOnClickListener {
+            val name = editName.text.toString()
+            val time = editTime.text.toString()
+            val total = editTotalDoses.text.toString().toIntOrNull() ?: 1
+            val interval = editInterval.text.toString().toIntOrNull() ?: 0
+
+            if (name.isNotBlank() && time.isNotBlank()) {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    // Створюємо об'єкт для бази даних
+                    val updatedMed = med?.copy(
+                        name = name,
+                        type = spinnerType.selectedItem.toString(),
+                        dosage = editDosage.text.toString(),
+                        time = time,
+                        days = editDays.text.toString(),
+                        totalDoses = total,
+                        interval = interval,
+                        isSkipped = false //скидаємо червоний колір при редагуванні
+                    ) ?: Medicine(
+                        name = name,
+                        type = spinnerType.selectedItem.toString(),
+                        dosage = editDosage.text.toString(),
+                        time = time,
+                        days = editDays.text.toString(),
+                        totalDoses = total,
+                        takenDoses = 0,
+                        interval = interval,
+                        isSkipped = false // нові ліки теж не червоні
+                    )
+
+                    // Записуємо в базу
+                    database.medicineDao().insert(updatedMed)
+
+                    // Ставимо будильники
+                    scheduleMultipleAlarms(updatedMed)
+
+                    withContext(Dispatchers.Main) {
+                        refreshData() // Оновлюємо список на екрані
+                        dialog.dismiss() // Закриваємо вікно
+                    }
+                }
+            }
+        }
 
         // Налаштування вибору днів через AlertDialog (красиве вікно замість чекбоксів)
         val daysArray = arrayOf("Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота", "Неділя")
@@ -162,43 +225,6 @@ class MainActivity : AppCompatActivity() {
             editInterval.setText(it.interval.toString())
         }
 
-        btnSave.setOnClickListener {
-            val name = editName.text.toString()
-            val time = editTime.text.toString()
-            val total = editTotalDoses.text.toString().toIntOrNull() ?: 1
-            val interval = editInterval.text.toString().toIntOrNull() ?: 0
-
-            if (name.isNotBlank() && time.isNotBlank()) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    val updatedMed = med?.copy(
-                        name = name,
-                        type = spinnerType.selectedItem.toString(),
-                        dosage = editDosage.text.toString(),
-                        time = time,
-                        days = editDays.text.toString(),
-                        totalDoses = total,
-                        interval = interval
-                    ) ?: Medicine(
-                        name = name,
-                        type = spinnerType.selectedItem.toString(),
-                        dosage = editDosage.text.toString(),
-                        time = time,
-                        days = editDays.text.toString(),
-                        totalDoses = total,
-                        takenDoses = 0,
-                        interval = interval
-                    )
-
-                    database.medicineDao().insert(updatedMed)
-                    scheduleMultipleAlarms(updatedMed)
-
-                    withContext(Dispatchers.Main) {
-                        refreshData()
-                        dialog.dismiss()
-                    }
-                }
-            }
-        }
         dialog.show()
     }
 

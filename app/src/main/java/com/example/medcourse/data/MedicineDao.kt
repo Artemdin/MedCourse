@@ -10,6 +10,9 @@ interface MedicineDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(medicine: Medicine)
 
+    @Query("UPDATE medicine_table SET isSkipped = :skipped WHERE id = :medId")
+    suspend fun updateSkippedStatus(medId: Int, skipped: Boolean)
+
     // Для явного редагування існуючих ліків
     @Update
     suspend fun update(medicine: Medicine)
