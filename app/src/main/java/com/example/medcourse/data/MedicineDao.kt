@@ -8,7 +8,7 @@ interface MedicineDao {
     // Додати ліки в базу,якщо ID співпадає — замінити
     // Це універсальний метод: він і додає нові, і може оновлювати старі.
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(medicine: Medicine)
+    suspend fun insert(medicine: Medicine): Long
 
     @Query("UPDATE medicine_table SET isSkipped = :skipped WHERE id = :medId")
     suspend fun updateSkippedStatus(medId: Int, skipped: Boolean)

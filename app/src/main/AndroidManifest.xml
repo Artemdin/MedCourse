@@ -38,10 +38,6 @@
                 <action android:name="ACTION_TAKEN" />
             </intent-filter>
         </receiver>
-        <receiver
-            android:name=".ui.AlarmReceiver"
-            android:enabled="true"
-            android:exported="false" />
 
     </application>
 

@@ -44,15 +44,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Усі дні"
-        android:textColor="#4CAF50"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Дні прийому:"
-        android:layout_marginTop="12dp"
-        android:textSize="12sp"
-        android:textStyle="bold"/>
+        android:textColor="#4CAF50" />
 
     <EditText
         android:id="@+id/editDays"

@@ -19,6 +19,10 @@ class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val medName = intent.getStringExtra("MED_NAME") ?: "Ліки"
         val medId = intent.getIntExtra("MED_ID", -1)
+        if (medId == -1) return
+
+        // Якщо попереднє сповіщення по цих ліках проігноровано, наступне не показуємо.
+        if (NotificationStateStore.isPending(context, medId)) return
 
         GlobalScope.launch(Dispatchers.IO) { // Запускаємо корутину фонового потоку для перевірки бази
             val db = AppDatabase.getDatabase(context)
@@ -26,10 +30,10 @@ class AlarmReceiver : BroadcastReceiver() {
 
             // дізнаваємось який сьогодні день
             val calendar = Calendar.getInstance()
-            val currentDay = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale("uk")) ?: ""
+            val currentDay = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale("uk"))?.lowercase() ?: ""
 
             // перевірка чи є сьогоднішній день в списках про прийняття ліків
-            val isToday = medicine?.days?.contains(currentDay, ignoreCase = true) == true || medicine?.days == "Щодня"
+            val isToday = medicine?.days?.lowercase()?.contains(currentDay) == true || medicine?.days == "Щодня"
 
             // перевірка: показуємо сповіщення, тільки якщо прийом ще не завершено
             // -- Додано перевірку дня (&& isToday), щоб не дзвонило в неділю, якщо треба в суботу
@@ -89,6 +93,7 @@ class AlarmReceiver : BroadcastReceiver() {
                     // показуємо сповіщення
                     if (hasPermission) {
                         notificationManager.notify(medId, notification)
+                        NotificationStateStore.setPending(context, medId, true)
                     }
                 }
             }

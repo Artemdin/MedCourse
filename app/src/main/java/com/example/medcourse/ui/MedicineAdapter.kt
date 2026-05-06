@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.medcourse.R
 import com.example.medcourse.data.Medicine
+import java.util.Locale
 
 class MedicineAdapter(
     private var meds: List<Medicine>,
@@ -32,7 +33,7 @@ class MedicineAdapter(
         val med = meds[position]
 
         holder.name.text = med.name
-        holder.txtTime.text = med.time // Тепер без пробілів і підключено правильно
+        holder.txtTime.text = getNextDoseTimeText(med)
 
         // перевіряємо статус пропуску прямо при відмальовці списку
         if (med.isSkipped)
@@ -55,8 +56,22 @@ class MedicineAdapter(
             holder.name.setTextColor(android.graphics.Color.BLACK)
         }
 
+
+        // Оголошуємо змінну типу базового суперкласу
+        val dosageObj: com.example.medcourse.data.MedicineDosage
+
+        //  Залежно від типу ліків (з БД), створюємо об'єкт конкретного класу-нащадка
+        if (med.type == "Пігулка" || med.type == "Капсула") {
+            dosageObj = com.example.medcourse.data.PillDosage(med.name, med.dosage)
+        } else if (med.type == "Шприц (мл)" || med.type == "Краплі" || med.type == "Спрей") {
+            dosageObj = com.example.medcourse.data.LiquidDosage(med.name, med.dosage)
+        } else {
+            //  Резервний варіант (базовий клас), якщо тип невідомий
+            dosageObj = com.example.medcourse.data.MedicineDosage(med.name, med.dosage)
+        }
+
         // Вивід деталей / тип + доза
-        holder.details.text = "${med.type} • ${med.dosage}"
+        holder.details.text = dosageObj.getDosageInstruction()
 
         holder.btnDelete.setOnClickListener { onDeleteClick(med) }
         holder.itemView.setOnClickListener { onItemClick(med) }
@@ -67,5 +82,18 @@ class MedicineAdapter(
     fun updateData(newList: List<Medicine>) {
         meds = newList
         notifyDataSetChanged()
+    }
+
+    private fun getNextDoseTimeText(med: Medicine): String {
+        val parts = med.time.split(":")
+        if (parts.size != 2) return med.time
+        val hour = parts[0].toIntOrNull() ?: return med.time
+        val minute = parts[1].toIntOrNull() ?: return med.time
+
+        val shiftHours = if (med.interval > 0) med.takenDoses * med.interval else 0
+        val totalMinutes = ((hour + shiftHours) * 60 + minute) % (24 * 60)
+        val displayHour = totalMinutes / 60
+        val displayMinute = totalMinutes % 60
+        return String.format(Locale.US, "%02d:%02d", displayHour, displayMinute)
     }
 }

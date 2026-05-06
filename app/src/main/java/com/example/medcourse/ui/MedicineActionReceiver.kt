@@ -43,6 +43,8 @@ class MedicineActionReceiver : BroadcastReceiver() {
             }
         }
 
+        NotificationStateStore.setPending(context, medId, false)
+
         // Закриваємо сповіщення в шторці
         NotificationManagerCompat.from(context).cancel(medId)
 
