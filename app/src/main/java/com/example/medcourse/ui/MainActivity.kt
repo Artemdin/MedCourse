@@ -188,8 +188,13 @@ class MainActivity : AppCompatActivity() {
                     scheduleMultipleAlarms(medicineForAlarms)
 
                     withContext(Dispatchers.Main) {
-                        refreshData() // Оновлюємо список на екрані
                         dialog.dismiss() // Закриваємо вікно
+                    }
+
+                    kotlinx.coroutines.delay(150)
+                    // оновлюємо дані
+                    withContext(Dispatchers.Main) {
+                        refreshData()
                     }
                 }
             } else {
