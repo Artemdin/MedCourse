@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity() {
     }
     // функція для оновлення списку ліків на екрані
     private fun refreshData() {
-        // -- Отримуємо посилання на TextView один раз перед запуском корутини
+        //  Отримуємо посилання на TextView один раз перед запуском корутини
         val txtNext = findViewById<TextView>(R.id.txtNextMedicine)
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
             val sortedMeds = allMeds.sortedBy { getNextDoseTime(it) }
 
             //  Отримуємо поточний системний час
-            // -- Використовуємо Locale.US, щоб формат годин завжди був передбачуваним (24г)
+            //  Використовуємо Locale.US, щоб формат годин завжди був передбачуваним (24г)
             val currentTime = java.text.SimpleDateFormat("HH:mm", java.util.Locale.US).format(java.util.Date())
 
             withContext(Dispatchers.Main) {
@@ -115,7 +115,7 @@ class MainActivity : AppCompatActivity() {
                 // Пошук лік
                 // -Ще не настав час (або зараз)
                 // -Які ще не закінчились в вживанні (taken < total)
-                // -- Додано ?: для пошуку першого не закінченого курсу, якщо на сьогодні все випито
+                //  Додано ?: для пошуку першого не закінченого курсу, якщо на сьогодні все випито
                 val nextMed = sortedMeds.firstOrNull {
                     getNextDoseTime(it) >= currentTime && it.takenDoses < it.totalDoses
                 } ?: sortedMeds.firstOrNull { it.takenDoses < it.totalDoses } // ящо на сьогодні нема ліків, шукаємо перші не закінчені на ближчий до нас час
@@ -242,7 +242,7 @@ class MainActivity : AppCompatActivity() {
 
         // Час вводиться вручну (наприклад: 8:00, 9:33)
 
-        val types = arrayOf("Пігулка", "Капсула", "Шприц (мл)", "Краплі", "Спрей")
+        val types = arrayOf("Пігулка","Сироп", "Капсула", "Шприц (мл)", "Краплі", "Спрей")
         spinnerType.adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, types)
 
         // Якщо редагуємо, заповнюємо поля існуючими даними

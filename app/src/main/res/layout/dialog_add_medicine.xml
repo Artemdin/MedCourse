@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -13,12 +14,18 @@
         android:textStyle="bold"
         android:layout_marginBottom="16dp"/>
 
-    <EditText
-        android:id="@+id/editName"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Назва ліків (напр. Анальгін)"
-        android:inputType="textCapSentences"/>
+        android:layout_marginBottom="8dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Назва ліків (напр. Анальгін)"
+            android:inputType="textCapSentences"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
         android:layout_width="wrap_content"
@@ -46,43 +53,70 @@
         android:text="Усі дні"
         android:textColor="#4CAF50" />
 
-    <EditText
-        android:id="@+id/editDays"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Виберіть дні"
-        android:focusable="false"
-        android:clickable="true"
-        android:layout_marginTop="4dp"
-        android:background="?android:attr/editTextBackground" />
+        android:layout_marginTop="4dp">
 
-    <EditText
-        android:id="@+id/editDosage"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Дозування (напр. 1 шт)"
-        android:layout_marginTop="8dp"/>
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editDays"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Виберіть дні"
+            android:focusable="false"
+            android:clickable="true" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <EditText
-        android:id="@+id/editTime"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Час (напр. 08:00)"
-        android:layout_marginTop="8dp"
-        android:inputType="time"/>
-    <EditText
-        android:id="@+id/editTotalDoses"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Скільки всього прийомів (напр. 3)"
-        android:inputType="number" />
+        android:layout_marginTop="8dp">
 
-    <EditText
-        android:id="@+id/editInterval"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editDosage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Дозування (наприклад 1 шт / 20 мл)" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Інтервал між ними (в годинах)"
-        android:inputType="number" />
+        android:layout_marginTop="8dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Час (напр. 08:00)"
+            android:inputType="time"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTotalDoses"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Скільки всього прийомів (напр. 3)"
+            android:inputType="number" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editInterval"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Інтервал між ними (в годинах)"
+            android:inputType="number" />
+    </com.google.android.material.textfield.TextInputLayout>
     <Button
         android:id="@+id/btnSave"
         android:layout_width="match_parent"

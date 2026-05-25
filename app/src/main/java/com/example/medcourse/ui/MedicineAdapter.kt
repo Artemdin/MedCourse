@@ -35,6 +35,9 @@ class MedicineAdapter(
         holder.name.text = med.name
         holder.txtTime.text = getNextDoseTimeText(med)
 
+        // Створюємо об'єкт для логіки стану курсу
+        val session = TreatmentSession(med.totalDoses, med.takenDoses)
+
         // перевіряємо статус пропуску прямо при відмальовці списку
         if (med.isSkipped)
         {
@@ -42,7 +45,8 @@ class MedicineAdapter(
             holder.txtProgress.setTextColor(android.graphics.Color.RED)
             holder.name.setTextColor(android.graphics.Color.RED) // красить в червоний
         }
-        else if (med.takenDoses >= med.totalDoses)
+        //  Використовуємо інкапсульовану перевірку замість прямого доступу до полів
+        else if (session.isFinished())
         {
             holder.txtProgress.text = "КУРС ЗАВЕРШЕНО! (${med.takenDoses}/${med.totalDoses})"
             holder.txtProgress.setTextColor(android.graphics.Color.parseColor("#388E3C")) // Темно-зелений
@@ -50,8 +54,8 @@ class MedicineAdapter(
         }
         else
         {
-            // вивід статистики
-            holder.txtProgress.text = "Прийнято: ${med.takenDoses} з ${med.totalDoses}"
+            // вивід статистики через інкапсульовані методи
+            holder.txtProgress.text = "Прийнято разів: ${session.getTakenDoses()} з ${session.getTotalDoses()}"
             holder.txtProgress.setTextColor(android.graphics.Color.GRAY)
             holder.name.setTextColor(android.graphics.Color.BLACK)
         }
@@ -63,11 +67,13 @@ class MedicineAdapter(
         //  Залежно від типу ліків (з БД), створюємо об'єкт конкретного класу-нащадка
         if (med.type == "Пігулка" || med.type == "Капсула") {
             dosageObj = com.example.medcourse.data.PillDosage(med.name, med.dosage)
-        } else if (med.type == "Шприц (мл)" || med.type == "Краплі" || med.type == "Спрей") {
-            dosageObj = com.example.medcourse.data.LiquidDosage(med.name, med.dosage)
+        } else if (med.type == "Сироп") {
+            dosageObj = com.example.medcourse.data.SyrupDosage(med.name, med.dosage)
+        } else if (med.type == "Шприц (мл)") {
+            dosageObj = com.example.medcourse.data.InjectionDosage(med.name, med.dosage)
         } else {
-            //  Резервний варіант (базовий клас), якщо тип невідомий
-            dosageObj = com.example.medcourse.data.MedicineDosage(med.name, med.dosage)
+            // Резервний варіант для "Краплі", "Спрей" та іншого
+            dosageObj = com.example.medcourse.data.GeneralDosage(med.name, med.dosage)
         }
 
         // Вивід деталей / тип + доза
@@ -77,6 +83,22 @@ class MedicineAdapter(
         holder.itemView.setOnClickListener { onItemClick(med) }
     }
 
+    class TreatmentSession(
+        private val totalDoses: Int,      // Загальна кількість прийомів
+        private var takenDoses: Int = 0   // Скільки вже прийнято
+    ) {
+        //  Метод контролює, щоб кількість прийнятих не перевищила загальну
+        fun incrementTakenDoses() {
+            if (takenDoses < totalDoses) {
+                takenDoses++
+            }
+        }
+
+        fun getTakenDoses(): Int = takenDoses
+        fun getTotalDoses(): Int = totalDoses
+
+        fun isFinished(): Boolean = takenDoses >= totalDoses
+    }
     override fun getItemCount() = meds.size
 
     fun updateData(newList: List<Medicine>) {
