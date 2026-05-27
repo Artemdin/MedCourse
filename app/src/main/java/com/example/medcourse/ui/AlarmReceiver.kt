@@ -39,6 +39,18 @@ class AlarmReceiver : BroadcastReceiver() {
             // -- Додано перевірку дня (&& isToday), щоб не дзвонило в неділю, якщо треба в суботу
             if (medicine != null && medicine.takenDoses < medicine.totalDoses && isToday) {
 
+                val dosageObj: com.example.medcourse.data.MedicineDosage
+                if (medicine.type == "Пігулка" || medicine.type == "Капсула") {
+                    dosageObj = com.example.medcourse.data.PillDosage(medicine.name, medicine.dosage)
+                } else if (medicine.type == "Сироп") {
+                    dosageObj = com.example.medcourse.data.SyrupDosage(medicine.name, medicine.dosage)
+                } else if (medicine.type == "Шприц (мл)") {
+                    dosageObj = com.example.medcourse.data.InjectionDosage(medicine.name, medicine.dosage)
+                } else {
+                    dosageObj = com.example.medcourse.data.GeneralDosage(medicine.name, medicine.dosage)
+                }
+                val notificationText = dosageObj.getDosageInstruction()
+
                 withContext(Dispatchers.Main) { // -- Перемикаємось на головний потік для роботи з повідомленнями
                     val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                     val channelId = "MED_NOTIF_CHANNEL"
@@ -74,8 +86,9 @@ class AlarmReceiver : BroadcastReceiver() {
                     // Збираємо сповіщення разом із кнопками
                     val notification = NotificationCompat.Builder(context, channelId)
                         .setSmallIcon(R.drawable.ic_launcher_foreground)
-                        .setContentTitle("Час прийому ліків!")
-                        .setContentText("Не забудьте прийняти: $medName")
+                        .setContentTitle("Час прийому: ${medicine.name}")
+                        .setContentText(notificationText)
+                        .setStyle(NotificationCompat.BigTextStyle().bigText(notificationText))
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setAutoCancel(true)
                         .addAction(R.drawable.ic_launcher_foreground, "Прийняв", takenPendingIntent)
