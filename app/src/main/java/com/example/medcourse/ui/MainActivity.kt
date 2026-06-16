@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge() // весь екран
         setContentView(R.layout.activity_main)
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
@@ -50,8 +50,8 @@ class MainActivity : AppCompatActivity() {
 
         adapter = MedicineAdapter(emptyList(),
             onDeleteClick = { medicine ->
-                lifecycleScope.launch(Dispatchers.IO) {
-                    cancelMultipleAlarms(medicine)
+                    lifecycleScope.launch(Dispatchers.IO) {
+                    cancelMultipleAlarms(this@MainActivity, medicine)
                     database.medicineDao().delete(medicine)
                     NotificationStateStore.clear(this@MainActivity, medicine.id)
                     refreshData()
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
                     description = descriptionText
                 }
             val notificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+                getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager // доступ
             notificationManager.createNotificationChannel(channel)
         }
     }
@@ -146,13 +146,25 @@ class MainActivity : AppCompatActivity() {
         val btnSave = view.findViewById<android.widget.Button>(R.id.btnSave)
 
         btnSave.setOnClickListener {
-            val name = editName.text.toString()
+            val name = editName.text.toString().trim()
             val time = normalizeTimeInput(editTime.text.toString())
             val days = editDays.text.toString().ifBlank { "Щодня" }
-            val total = editTotalDoses.text.toString().toIntOrNull() ?: 1
+            val enteredTotal = editTotalDoses.text.toString().toIntOrNull() ?: 1
+            val dayCount = (if (days == "Щодня" || days.isBlank()) 1 else days.split(",").filter { it.isNotBlank() }.size).coerceAtLeast(1)
+            val total = enteredTotal * dayCount
             val interval = editInterval.text.toString().toIntOrNull() ?: 0
 
-            if (name.isNotBlank() && time.isNotBlank()) {
+            var isValid = true
+            if (name.isBlank()) {
+                editName.error = "Введіть назву ліків"
+                isValid = false
+            }
+            if (time.isBlank()) {
+                editTime.error = "Введіть час у форматі H:mm або HH:mm"
+                isValid = false
+            }
+
+            if (isValid) {
                 lifecycleScope.launch(Dispatchers.IO) {
                     val medicineForAlarms = if (med != null) {
                         val updatedMed = med.copy(
@@ -165,7 +177,7 @@ class MainActivity : AppCompatActivity() {
                             interval = interval,
                             isSkipped = false
                         )
-                        cancelMultipleAlarms(med)
+                        cancelMultipleAlarms(this@MainActivity, med)
                         NotificationStateStore.setPending(this@MainActivity, med.id, false)
                         database.medicineDao().update(updatedMed)
                         updatedMed
@@ -185,7 +197,7 @@ class MainActivity : AppCompatActivity() {
                         newMed.copy(id = insertedId)
                     }
 
-                    scheduleMultipleAlarms(medicineForAlarms)
+                    scheduleMultipleAlarms(this@MainActivity, medicineForAlarms)
 
                     withContext(Dispatchers.Main) {
                         dialog.dismiss() // Закриваємо вікно
@@ -197,8 +209,6 @@ class MainActivity : AppCompatActivity() {
                         refreshData()
                     }
                 }
-            } else {
-                editTime.error = "Введіть час у форматі H:mm або HH:mm"
             }
         }
 
@@ -220,7 +230,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        editDays.isFocusable = false
+        editDays.isFocusable = false // не можна редагувати вручну
         editDays.setOnClickListener {
             androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle("Виберіть дні")
@@ -240,8 +250,6 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
 
-        // Час вводиться вручну (наприклад: 8:00, 9:33)
-
         val types = arrayOf("Пігулка","Сироп", "Капсула", "Шприц (мл)", "Краплі", "Спрей")
         spinnerType.adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, types)
 
@@ -251,7 +259,9 @@ class MainActivity : AppCompatActivity() {
             editDosage.setText(it.dosage)
             editTime.setText(it.time)
             editDays.setText(it.days)
-            editTotalDoses.setText(it.totalDoses.toString())
+            val dayCount = (if (it.days == "Щодня" || it.days.isBlank()) 1 else it.days.split(",").filter { it.isNotBlank() }.size).coerceAtLeast(1)
+            val displayTotal = it.totalDoses / dayCount
+            editTotalDoses.setText(displayTotal.toString())
             editInterval.setText(it.interval.toString())
 
             selectedDays.fill(false)
@@ -271,48 +281,7 @@ class MainActivity : AppCompatActivity() {
 
         dialog.show()
     }
-
-    private fun scheduleMultipleAlarms(medicine: Medicine) {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
-        val timeParts = medicine.time.split(":")
-        if (timeParts.size != 2) return
-
-        for (i in 0 until medicine.totalDoses) {
-            val calendar = Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, timeParts[0].toInt())
-                set(Calendar.MINUTE, timeParts[1].toInt())
-                set(Calendar.SECOND, 0)
-                add(Calendar.HOUR_OF_DAY, i * medicine.interval) // Додаємо інтервал у годинах
-                if (before(Calendar.getInstance())) add(Calendar.DATE, 1)
-            }
-
-            val intent = Intent(this, AlarmReceiver::class.java).apply {
-                putExtra("MED_NAME", medicine.name)
-                putExtra("MED_ID", medicine.id)
-            }
-
-            val pendingIntent = PendingIntent.getBroadcast(
-                this, medicine.id * 100 + i, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-
-            alarmManager.setAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
-        }
-    }
-
-    private fun cancelMultipleAlarms(medicine: Medicine) {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
-        for (i in 0 until medicine.totalDoses) {
-            val intent = Intent(this, AlarmReceiver::class.java)
-            val pendingIntent = PendingIntent.getBroadcast(
-                this,
-                medicine.id * 100 + i,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            alarmManager.cancel(pendingIntent)
-        }
-    }
+    // планування будильника
 
     private fun normalizeTimeInput(raw: String): String {
         val trimmed = raw.trim()
@@ -334,5 +303,77 @@ class MainActivity : AppCompatActivity() {
         val displayHour = totalMinutes / 60
         val displayMinute = totalMinutes % 60
         return String.format(Locale.US, "%02d:%02d", displayHour, displayMinute)
+    }
+}
+fun scheduleMultipleAlarms(context: Context, medicine: Medicine) {
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+    val timeParts = medicine.time.split(":")
+    if (timeParts.size != 2) return
+
+    val remainingDoses = medicine.totalDoses - medicine.takenDoses
+    if (remainingDoses <= 0) return
+
+    val hour = timeParts[0].toIntOrNull() ?: return
+    val minute = timeParts[1].toIntOrNull() ?: return
+// розрахунок часу будильників
+    val intervalHours = if (medicine.interval > 0) medicine.interval else 24
+    val calendar = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, hour)
+        set(Calendar.MINUTE, minute)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+
+    val now = Calendar.getInstance()
+    while (calendar.before(now)) {
+        calendar.add(Calendar.HOUR_OF_DAY, intervalHours)
+    }
+
+    val daysList = if (medicine.days == "Щодня" || medicine.days.isBlank()) emptyList() else medicine.days.split(",").map { it.trim() }.filter { it.isNotBlank() }
+    if (daysList.isNotEmpty()) {
+        while (true) {
+            val dayName = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale("uk"))?.lowercase() ?: ""
+            if (daysList.any { it.lowercase() == dayName }) {
+                break
+            }
+            calendar.add(Calendar.DATE, 1)
+        }
+    }
+// планування будьників
+    for (i in 0 until remainingDoses) {
+        val alarmTime = calendar.clone() as Calendar
+        alarmTime.add(Calendar.HOUR_OF_DAY, i * intervalHours)
+
+        val intent = Intent(context, AlarmReceiver::class.java).apply {
+            putExtra("MED_NAME", medicine.name)
+            putExtra("MED_ID", medicine.id)
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            medicine.id * 100 + i,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        alarmManager.setAndAllowWhileIdle(
+            android.app.AlarmManager.RTC_WAKEUP,
+            alarmTime.timeInMillis,
+            pendingIntent
+        )
+    }
+}
+
+fun cancelMultipleAlarms(context: Context, medicine: Medicine) {
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+    for (i in 0 until medicine.totalDoses) {
+        val intent = Intent(context, AlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            medicine.id * 100 + i,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager.cancel(pendingIntent)
     }
 }

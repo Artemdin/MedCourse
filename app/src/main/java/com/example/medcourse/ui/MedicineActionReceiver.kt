@@ -28,6 +28,12 @@ class MedicineActionReceiver : BroadcastReceiver() {
                     db.medicineDao().incrementTakenDoses(medId)
                     // Скидаємо статус пропуску, якщо ліки прийнято
                     db.medicineDao().updateSkippedStatus(medId, false)
+                    
+                    val medicine = db.medicineDao().getAllMedicine().find { it.id == medId }
+                    if (medicine != null) {
+                        cancelMultipleAlarms(context, medicine)
+                        scheduleMultipleAlarms(context, medicine)
+                    }
                 }
                 // Показуємо підтвердження користувачу
                 Toast.makeText(context, "Прийом $medicineName зафіксовано!", Toast.LENGTH_SHORT).show()
@@ -37,6 +43,12 @@ class MedicineActionReceiver : BroadcastReceiver() {
                 // Позначаємо в базі, що прийом пропущено
                 GlobalScope.launch(Dispatchers.IO) {
                     db.medicineDao().updateSkippedStatus(medId, true)
+                    
+                    val medicine = db.medicineDao().getAllMedicine().find { it.id == medId }
+                    if (medicine != null) {
+                        cancelMultipleAlarms(context, medicine)
+                        scheduleMultipleAlarms(context, medicine)
+                    }
                 }
                 // Показуємо підтвердження пропуску
                 Toast.makeText(context, "Прийом $medicineName пропущено!", Toast.LENGTH_SHORT).show()

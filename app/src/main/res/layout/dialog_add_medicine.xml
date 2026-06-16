@@ -9,10 +9,10 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:text="Додавання ліків"
         android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp"/>
+        android:textStyle="bold" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
@@ -24,15 +24,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Назва ліків (напр. Анальгін)"
-            android:inputType="textCapSentences"/>
+            android:inputType="textCapSentences" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Тип препарату:"
         android:layout_marginTop="12dp"
-        android:textSize="12sp"/>
+        android:text="Тип препарату:"
+        android:textSize="12sp" />
+
     <Spinner
         android:id="@+id/spinnerType"
         android:layout_width="match_parent"
@@ -41,10 +42,10 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Дні прийому:"
         android:layout_marginTop="12dp"
+        android:text="Дні прийому:"
         android:textSize="12sp"
-        android:textStyle="bold"/>
+        android:textStyle="bold" />
 
     <CheckBox
         android:id="@+id/cbAllDays"
@@ -62,9 +63,9 @@
             android:id="@+id/editDays"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Виберіть дні"
+            android:clickable="true"
             android:focusable="false"
-            android:clickable="true" />
+            android:hint="Виберіть дні" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -89,7 +90,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Час (напр. 08:00)"
-            android:inputType="time"/>
+            android:inputType="time" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -117,12 +118,13 @@
             android:hint="Інтервал між ними (в годинах)"
             android:inputType="number" />
     </com.google.android.material.textfield.TextInputLayout>
+
     <Button
         android:id="@+id/btnSave"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_marginTop="24dp"
-        android:text="Зберегти"
         android:backgroundTint="#4CAF50"
-        android:textColor="@android:color/white"/>
+        android:text="Зберегти"
+        android:textColor="@android:color/white" />
 </LinearLayout>

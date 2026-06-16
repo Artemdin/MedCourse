@@ -23,12 +23,12 @@ class MedicineAdapter(
         val btnDelete: ImageButton = view.findViewById(R.id.btnDelete)
         val txtProgress: TextView = view.findViewById(R.id.txtProgress)
     }
-
+// перетворення xml на view
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MedViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_medicine, parent, false)
         return MedViewHolder(view)
     }
-
+// заповнення рядка даними
     override fun onBindViewHolder(holder: MedViewHolder, position: Int) {
         val med = meds[position]
 
