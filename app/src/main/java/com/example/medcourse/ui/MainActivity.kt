@@ -1,3 +1,4 @@
+
 package com.example.medcourse.ui
 
 import android.app.PendingIntent
@@ -150,7 +151,7 @@ class MainActivity : AppCompatActivity() {
             val time = normalizeTimeInput(editTime.text.toString())
             val days = editDays.text.toString().ifBlank { "Щодня" }
             val enteredTotal = editTotalDoses.text.toString().toIntOrNull() ?: 1
-            val dayCount = (if (days == "Щодня" || days.isBlank()) 1 else days.split(",").filter { it.isNotBlank() }.size).coerceAtLeast(1)
+            val dayCount = (if (days == "Щодня" || days.isBlank()) 7 else days.split(",").filter { it.isNotBlank() }.size).coerceAtLeast(1)
             val total = enteredTotal * dayCount
             val interval = editInterval.text.toString().toIntOrNull() ?: 0
 
@@ -259,7 +260,7 @@ class MainActivity : AppCompatActivity() {
             editDosage.setText(it.dosage)
             editTime.setText(it.time)
             editDays.setText(it.days)
-            val dayCount = (if (it.days == "Щодня" || it.days.isBlank()) 1 else it.days.split(",").filter { it.isNotBlank() }.size).coerceAtLeast(1)
+            val dayCount = (if (it.days == "Щодня" || it.days.isBlank()) 7 else it.days.split(",").filter { it.isNotBlank() }.size).coerceAtLeast(1)
             val displayTotal = it.totalDoses / dayCount
             editTotalDoses.setText(displayTotal.toString())
             editInterval.setText(it.interval.toString())
